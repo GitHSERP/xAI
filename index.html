@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>奇勝 xAI 銷項辨識系統｜影片教學網頁</title>
+  <meta name="description" content="奇勝 xAI 銷項辨識系統影片教學專區，快速依分類與關鍵字查找教學影片。">
+  <link rel="preconnect" href="https://img.youtube.com">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__content">
+        <p class="hero__eyebrow">奇勝 xAI 銷項辨識系統</p>
+        <h1>影片教學專區</h1>
+        <p class="hero__description">
+          快速查看各項掃描與操作教學影片，依分類瀏覽，點擊即可觀看。
+        </p>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="toolbar" aria-label="影片篩選工具">
+        <div class="search-panel">
+          <label class="search-label" for="searchInput">搜尋影片</label>
+          <div class="search-field">
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="搜尋標題、介紹或分類"
+              autocomplete="off"
+            >
+          </div>
+        </div>
+        <nav class="category-nav" aria-label="影片分類">
+          <div id="categoryTabs" class="category-tabs"></div>
+        </nav>
+      </section>
+
+      <section class="results-header" aria-live="polite">
+        <div>
+          <h2>教學影片列表</h2>
+          <p id="resultSummary">載入中...</p>
+        </div>
+      </section>
+
+      <section>
+        <div id="videoGrid" class="video-grid"></div>
+        <div id="emptyState" class="empty-state" hidden>
+          <h3>找不到符合條件的影片</h3>
+          <p>請調整搜尋關鍵字或切換分類。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
