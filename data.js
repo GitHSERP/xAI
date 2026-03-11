@@ -20,7 +20,7 @@ window.videoData = [
     title: "拍攝掃描機 IPEVO V4K",
     url: "./movies/2.mp4",
     description: "介紹 IPEVO V4K 的拍攝掃描方式與使用情境。",
-    order: 2,
+    order: 1,
     visible: true
   },
   {
@@ -28,7 +28,7 @@ window.videoData = [
     title: "AI 防呆：跳號、重複掃描即時提醒",
     url: "./movies/3.mp4",
     description: "示意介紹文字：說明 AI 防呆提醒功能與實際操作畫面。",
-    order: 3,
+    order: 2,
     visible: true
   },
   {
@@ -36,7 +36,7 @@ window.videoData = [
     title: "作廢發票掃描",
     url: "./movies/4.mp4",
     description: "示意介紹文字：展示作廢發票的掃描辨識與處理流程。",
-    order: 4,
+    order: 3,
     visible: true
   },
   {
