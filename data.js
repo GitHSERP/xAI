@@ -8,10 +8,10 @@ window.videoData = [
     visible: true
   },
   {
-    category: "掃描方案",
-    title: "銷項手開發票",
+    category: "軟體操作",
+    title: "xAI 銷項辨識四步驟教學 (掃描/檢查/確認/轉檔)",
     url: "./movies/1.mp4",
-    description: "說明手開發票的掃描辨識流程與操作重點。",
+    description: "本影片為 xAI 銷項辨識系統的標準操作教學，協助您快速完成日常銷項處理",
     order: 1,
     visible: true
   },
@@ -44,7 +44,7 @@ window.videoData = [
     title: "軟體操作",
     url: "./movies/5.mp4",
     description: "示意介紹文字：帶看系統介面與常用操作步驟。",
-    order: 5,
+    order: 2,
     visible: true
   }
 ];
