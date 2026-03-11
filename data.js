@@ -1,5 +1,13 @@
 window.videoData = [
   {
+    category: "實測",
+    title: "實測1",
+    url: "./movies/1.mp4",
+    description: "實測實測實測實測實測實測。",
+    order: 1,
+    visible: true
+  },
+  {
     category: "掃描方案",
     title: "銷項手開發票",
     url: "./movies/1.mp4",
@@ -21,14 +29,6 @@ window.videoData = [
     url: "./movies/3.mp4",
     description: "示意介紹文字：說明 AI 防呆提醒功能與實際操作畫面。",
     order: 3,
-    visible: true
-  },
-  {
-    category: "掃描方案",
-    title: "作廢發票掃描",
-    url: "./movies/4.mp4",
-    description: "示意介紹文字：展示作廢發票的掃描辨識與處理流程。",
-    order: 4,
     visible: true
   },
   {
