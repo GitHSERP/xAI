@@ -32,6 +32,14 @@ window.videoData = [
     visible: true
   },
   {
+    category: "掃描方案",
+    title: "作廢發票掃描",
+    url: "./movies/4.mp4",
+    description: "示意介紹文字：展示作廢發票的掃描辨識與處理流程。",
+    order: 4,
+    visible: true
+  },
+  {
     category: "軟體操作",
     title: "軟體操作",
     url: "./movies/5.mp4",
