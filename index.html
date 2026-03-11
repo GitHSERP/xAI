@@ -10,16 +10,10 @@
 <body>
   <div class="page-shell">
     <header class="hero">
-      <div class="hero__brand">
-        <img class="hero__logo" src="./logo.png" alt="奇勝公司 Logo">
-        <div>
-          <p class="hero__eyebrow">奇勝 xAI 銷項辨識系統</p>
-          <h1>影片教學專區</h1>
-        </div>
+      <h1 class="sr-only">奇勝 xAI 銷項辨識系統｜影片教學專區</h1>
+      <div class="hero__banner-shell">
+        <img class="hero__banner" src="./brand-header-optimized.png" alt="奇勝 xAI 辨識系統 影片教學專區">
       </div>
-      <p class="hero__description">
-        以播放清單方式集中管理教學影片，依分類篩選後可直接在本頁觀看。
-      </p>
     </header>
 
     <main class="main-content">
@@ -27,6 +21,9 @@
         <div class="player-panel">
           <div class="player-panel__video">
             <video id="videoPlayer" controls preload="metadata" playsinline></video>
+            <span id="idleOverlay" class="player-idle-overlay" aria-hidden="true">
+              <span class="player-idle-overlay__icon"></span>
+            </span>
             <span id="videoFeedback" class="player-feedback" aria-hidden="true">
               <span class="player-feedback__icon player-feedback__icon--play"></span>
             </span>

@@ -2,8 +2,12 @@
   const state = {
     activeCategory: "全部影片",
     searchText: "",
-    activeVideoUrl: ""
+    activeVideoUrl: "",
+    pendingRestoreTime: 0
   };
+  const STORAGE_KEY = "xai-video-teaching:last-video-url";
+  const TIME_STORAGE_KEY = "xai-video-teaching:playback-times";
+  let feedbackResetTimer = null;
 
   const categoryTabs = document.getElementById("categoryTabs");
   const videoGrid = document.getElementById("videoGrid");
@@ -11,6 +15,7 @@
   const resultSummary = document.getElementById("resultSummary");
   const searchInput = document.getElementById("searchInput");
   const videoPlayer = document.getElementById("videoPlayer");
+  const idleOverlay = document.getElementById("idleOverlay");
   const videoFeedback = document.getElementById("videoFeedback");
   const currentCategory = document.getElementById("currentCategory");
   const currentOrder = document.getElementById("currentOrder");
@@ -31,10 +36,12 @@
   renderCategoryTabs(categories);
 
   if (videos.length > 0) {
-    setActiveVideo(videos.slice().sort(compareVideos)[0]);
+    const initialVideo = getInitialVideo();
+    setActiveVideo(initialVideo);
   }
 
   renderVideos();
+  syncPlayerOverlay();
 
   searchInput.addEventListener("input", function (event) {
     state.searchText = event.target.value.trim().toLowerCase();
@@ -43,13 +50,31 @@
 
   videoPlayer.addEventListener("play", function () {
     showVideoFeedback("play");
+    syncPlayerOverlay();
   });
 
   videoPlayer.addEventListener("pause", function () {
+    persistPlaybackTime(state.activeVideoUrl, videoPlayer.currentTime);
     if (videoPlayer.ended) {
+      syncPlayerOverlay();
       return;
     }
     showVideoFeedback("pause");
+    syncPlayerOverlay();
+  });
+
+  videoPlayer.addEventListener("timeupdate", function () {
+    persistPlaybackTime(state.activeVideoUrl, videoPlayer.currentTime);
+  });
+
+  videoPlayer.addEventListener("loadedmetadata", function () {
+    restorePlaybackTime();
+    syncPlayerOverlay();
+  });
+
+  videoPlayer.addEventListener("ended", function () {
+    persistPlaybackTime(state.activeVideoUrl, 0);
+    syncPlayerOverlay();
   });
 
   function normalizeVideo(video, index) {
@@ -167,6 +192,7 @@
     const shouldAutoplay = autoplay !== false;
     const isSameVideo = state.activeVideoUrl === video.url;
     state.activeVideoUrl = video.url;
+    persistLastVideo(video.url);
     currentCategory.textContent = video.category;
     currentOrder.textContent = Number.isFinite(Number(video.order)) ? "排序 " + Number(video.order) : "";
     currentTitle.textContent = video.title;
@@ -176,15 +202,19 @@
       videoPlayer.src = video.url;
       videoPlayer.setAttribute("aria-label", video.title);
       resetVideoFeedback();
+      state.pendingRestoreTime = getPersistedPlaybackTime(video.url);
     }
 
     if (shouldAutoplay) {
       const playResult = videoPlayer.play();
       if (playResult && typeof playResult.catch === "function") {
         playResult.catch(function () {
+          syncPlayerOverlay();
           return undefined;
         });
       }
+    } else {
+      syncPlayerOverlay();
     }
   }
 
@@ -196,14 +226,106 @@
     });
   }
 
+  function getInitialVideo() {
+    const savedUrl = getPersistedLastVideo();
+    if (savedUrl) {
+      const matchedVideo = videos.find(function (video) {
+        return video.url === savedUrl;
+      });
+
+      if (matchedVideo) {
+        return matchedVideo;
+      }
+    }
+
+    return videos.slice().sort(compareVideos)[0];
+  }
+
+  function getPersistedLastVideo() {
+    try {
+      return window.localStorage.getItem(STORAGE_KEY) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function persistLastVideo(url) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, url);
+    } catch (error) {
+      return;
+    }
+  }
+
+  function getPersistedPlaybackTime(url) {
+    if (!url) {
+      return 0;
+    }
+
+    try {
+      const rawValue = window.localStorage.getItem(TIME_STORAGE_KEY);
+      const timeMap = rawValue ? JSON.parse(rawValue) : {};
+      const savedTime = Number(timeMap[url]);
+      return Number.isFinite(savedTime) && savedTime > 0 ? savedTime : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  function persistPlaybackTime(url, time) {
+    if (!url || !Number.isFinite(time)) {
+      return;
+    }
+
+    try {
+      const rawValue = window.localStorage.getItem(TIME_STORAGE_KEY);
+      const timeMap = rawValue ? JSON.parse(rawValue) : {};
+      timeMap[url] = Math.max(0, Math.floor(time));
+      window.localStorage.setItem(TIME_STORAGE_KEY, JSON.stringify(timeMap));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function restorePlaybackTime() {
+    const restoreTime = state.pendingRestoreTime;
+    if (!Number.isFinite(restoreTime) || restoreTime <= 0) {
+      return;
+    }
+
+    const safeTime = Math.max(0, Math.min(restoreTime, Math.max(0, videoPlayer.duration - 1)));
+    if (safeTime > 0) {
+      videoPlayer.currentTime = safeTime;
+    }
+    state.pendingRestoreTime = 0;
+  }
+
   function showVideoFeedback(type) {
-    videoFeedback.classList.remove("is-play", "is-pause", "is-visible");
+    if (feedbackResetTimer) {
+      window.clearTimeout(feedbackResetTimer);
+    }
+
+    videoFeedback.classList.remove("is-play", "is-pause", "is-visible", "is-idle");
     void videoFeedback.offsetWidth;
     videoFeedback.classList.add(type === "pause" ? "is-pause" : "is-play", "is-visible");
+
+    feedbackResetTimer = window.setTimeout(function () {
+      videoFeedback.classList.remove("is-play", "is-pause", "is-visible");
+      syncPlayerOverlay();
+    }, 420);
   }
 
   function resetVideoFeedback() {
+    if (feedbackResetTimer) {
+      window.clearTimeout(feedbackResetTimer);
+      feedbackResetTimer = null;
+    }
     videoFeedback.classList.remove("is-play", "is-pause", "is-visible");
+  }
+
+  function syncPlayerOverlay() {
+    const isStopped = !videoPlayer.src || videoPlayer.paused || videoPlayer.ended;
+    idleOverlay.classList.toggle("is-visible", isStopped);
   }
 
   function renderVideoCard(video) {
