@@ -11,7 +11,7 @@ window.videoData = [
     category: "掃描方案",
     title: "拍攝掃描機 IPEVO V4K",
     url: "./movies/2.mp4",
-    description: "示意介紹文字：介紹 IPEVO V4K 的拍攝掃描方式與使用情境。",
+    description: "介紹 IPEVO V4K 的拍攝掃描方式與使用情境。",
     order: 2,
     visible: true
   },
