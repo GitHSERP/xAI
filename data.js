@@ -3,7 +3,7 @@ window.videoData = [
     category: "掃描方案",
     title: "銷項手開發票",
     url: "./movies/1.mp4",
-    description: "示意介紹文字：說明手開發票的掃描辨識流程與操作重點。",
+    description: "說明手開發票的掃描辨識流程與操作重點。",
     order: 1,
     visible: true
   },
