@@ -10,6 +10,7 @@
   const REQUESTED_VIDEO_KEY = getRequestedVideoKey();
   let feedbackResetTimer = null;
 
+
   const categoryTabs = document.getElementById("categoryTabs");
   const videoGrid = document.getElementById("videoGrid");
   const emptyState = document.getElementById("emptyState");
