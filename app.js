@@ -7,6 +7,7 @@
   };
   const STORAGE_KEY = "xai-video-teaching:last-video-url";
   const TIME_STORAGE_KEY = "xai-video-teaching:playback-times";
+  const REQUESTED_VIDEO_KEY = getRequestedVideoKey();
   let feedbackResetTimer = null;
 
   const categoryTabs = document.getElementById("categoryTabs");
@@ -21,6 +22,8 @@
   const currentOrder = document.getElementById("currentOrder");
   const currentTitle = document.getElementById("currentTitle");
   const currentDescription = document.getElementById("currentDescription");
+  const copyVideoLinkButton = document.getElementById("copyVideoLink");
+  const copyVideoLinkStatus = document.getElementById("copyVideoLinkStatus");
 
   const rawVideos = Array.isArray(window.videoData) ? window.videoData : [];
   const videos = rawVideos
@@ -46,6 +49,10 @@
   searchInput.addEventListener("input", function (event) {
     state.searchText = event.target.value.trim().toLowerCase();
     renderVideos();
+  });
+
+  copyVideoLinkButton.addEventListener("click", function () {
+    copyCurrentVideoLink();
   });
 
   videoPlayer.addEventListener("play", function () {
@@ -82,6 +89,7 @@
       originalIndex: index,
       category: String(video.category || "未分類").trim(),
       title: String(video.title || "未命名影片").trim(),
+      slug: String(video.slug || "").trim(),
       url: String(video.url || "").trim(),
       description: String(video.description || "尚未提供影片介紹。").trim(),
       order: video.order,
@@ -193,6 +201,7 @@
     const isSameVideo = state.activeVideoUrl === video.url;
     state.activeVideoUrl = video.url;
     persistLastVideo(video.url);
+    syncVideoUrl(video);
     currentCategory.textContent = video.category;
     currentOrder.textContent = Number.isFinite(Number(video.order)) ? "排序 " + Number(video.order) : "";
     currentTitle.textContent = video.title;
@@ -227,6 +236,13 @@
   }
 
   function getInitialVideo() {
+    if (REQUESTED_VIDEO_KEY) {
+      const requestedVideo = findVideoByKey(REQUESTED_VIDEO_KEY);
+      if (requestedVideo) {
+        return requestedVideo;
+      }
+    }
+
     const savedUrl = getPersistedLastVideo();
     if (savedUrl) {
       const matchedVideo = videos.find(function (video) {
@@ -239,6 +255,25 @@
     }
 
     return videos.slice().sort(compareVideos)[0];
+  }
+
+  function findVideoByKey(value) {
+    const normalizedValue = String(value || "").trim().toLowerCase();
+    if (!normalizedValue) {
+      return null;
+    }
+
+    return videos.find(function (video) {
+      const slug = getVideoSlug(video).toLowerCase();
+      const fileKey = getVideoFileKey(video).toLowerCase();
+      return (
+        fileKey === normalizedValue ||
+        fileKey.replace(/\.mp4$/i, "") === normalizedValue ||
+        slug === normalizedValue ||
+        video.url.toLowerCase() === normalizedValue ||
+        video.title.toLowerCase() === normalizedValue
+      );
+    }) || null;
   }
 
   function getPersistedLastVideo() {
@@ -326,6 +361,100 @@
   function syncPlayerOverlay() {
     const isStopped = !videoPlayer.src || videoPlayer.paused || videoPlayer.ended;
     idleOverlay.classList.toggle("is-visible", isStopped);
+  }
+
+  function getRequestedVideoKey() {
+    try {
+      return new URLSearchParams(window.location.search).get("video") || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function getVideoSlug(video) {
+    if (video.slug) {
+      return video.slug;
+    }
+
+    return getVideoFileKey(video).replace(/\.mp4$/i, "") || slugify(video.title || video.url || "");
+  }
+
+  function getVideoFileKey(video) {
+    const match = String(video.url || "").match(/([^\/?#]+)$/);
+    return match ? match[1] : "";
+  }
+
+  function slugify(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\.mp4$/i, "")
+      .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function syncVideoUrl(video) {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("video", getVideoSlug(video));
+      window.history.replaceState({}, "", url.toString());
+    } catch (error) {
+      return;
+    }
+  }
+
+  function copyCurrentVideoLink() {
+    const activeVideo = videos.find(function (video) {
+      return video.url === state.activeVideoUrl;
+    });
+
+    if (!activeVideo) {
+      setCopyStatus("目前沒有可複製的影片");
+      return;
+    }
+
+    const shareUrl = buildShareUrl(activeVideo);
+
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      navigator.clipboard.writeText(shareUrl).then(function () {
+        setCopyStatus("影片網址已複製");
+      }).catch(function () {
+        fallbackCopyText(shareUrl);
+      });
+      return;
+    }
+
+    fallbackCopyText(shareUrl);
+  }
+
+  function buildShareUrl(video) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("video", getVideoSlug(video));
+    return url.toString();
+  }
+
+  function fallbackCopyText(text) {
+    const tempInput = document.createElement("input");
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+
+    try {
+      document.execCommand("copy");
+      setCopyStatus("影片網址已複製");
+    } catch (error) {
+      setCopyStatus("複製失敗，請手動複製網址");
+    }
+
+    document.body.removeChild(tempInput);
+  }
+
+  function setCopyStatus(message) {
+    copyVideoLinkStatus.textContent = message;
+    window.clearTimeout(setCopyStatus.timerId);
+    setCopyStatus.timerId = window.setTimeout(function () {
+      copyVideoLinkStatus.textContent = "";
+    }, 2200);
   }
 
   function renderVideoCard(video) {

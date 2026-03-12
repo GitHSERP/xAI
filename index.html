@@ -30,8 +30,14 @@
           </div>
           <div class="player-panel__content">
             <div class="player-panel__meta">
-              <span id="currentCategory" class="player-panel__tag">載入中</span>
-              <span id="currentOrder" class="player-panel__order"></span>
+              <div class="player-panel__meta-left">
+                <span id="currentCategory" class="player-panel__tag">載入中</span>
+                <span id="currentOrder" class="player-panel__order"></span>
+              </div>
+              <div class="player-panel__meta-right">
+                <button id="copyVideoLink" class="player-panel__meta-button" type="button">複製影片網址</button>
+                <span id="copyVideoLinkStatus" class="player-panel__status" aria-live="polite"></span>
+              </div>
             </div>
             <h2 id="currentTitle">準備載入影片</h2>
             <p id="currentDescription">請從右側播放清單選擇要播放的教學內容。</p>
@@ -73,7 +79,18 @@
     </main>
   </div>
 
-  <script src="./data.js"></script>
-  <script src="./app.js"></script>
+  <script>
+    (function () {
+      var dataScript = document.createElement("script");
+      dataScript.src = "./data.js?v=" + Date.now();
+      dataScript.defer = true;
+      document.body.appendChild(dataScript);
+
+      var appScript = document.createElement("script");
+      appScript.src = "./app.js";
+      appScript.defer = true;
+      document.body.appendChild(appScript);
+    })();
+  </script>
 </body>
 </html>
