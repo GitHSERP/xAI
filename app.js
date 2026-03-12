@@ -2,11 +2,9 @@
   const state = {
     activeCategory: "全部影片",
     searchText: "",
-    activeVideoUrl: "",
-    pendingRestoreTime: 0
+    activeVideoUrl: ""
   };
   const STORAGE_KEY = "xai-video-teaching:last-video-url";
-  const TIME_STORAGE_KEY = "xai-video-teaching:playback-times";
   const REQUESTED_VIDEO_KEY = getRequestedVideoKey();
   let feedbackResetTimer = null;
 
@@ -62,7 +60,6 @@
   });
 
   videoPlayer.addEventListener("pause", function () {
-    persistPlaybackTime(state.activeVideoUrl, videoPlayer.currentTime);
     if (videoPlayer.ended) {
       syncPlayerOverlay();
       return;
@@ -71,17 +68,11 @@
     syncPlayerOverlay();
   });
 
-  videoPlayer.addEventListener("timeupdate", function () {
-    persistPlaybackTime(state.activeVideoUrl, videoPlayer.currentTime);
-  });
-
   videoPlayer.addEventListener("loadedmetadata", function () {
-    restorePlaybackTime();
     syncPlayerOverlay();
   });
 
   videoPlayer.addEventListener("ended", function () {
-    persistPlaybackTime(state.activeVideoUrl, 0);
     syncPlayerOverlay();
   });
 
@@ -212,7 +203,6 @@
       videoPlayer.src = video.url;
       videoPlayer.setAttribute("aria-label", video.title);
       resetVideoFeedback();
-      state.pendingRestoreTime = getPersistedPlaybackTime(video.url);
     }
 
     if (shouldAutoplay) {
@@ -291,49 +281,6 @@
     } catch (error) {
       return;
     }
-  }
-
-  function getPersistedPlaybackTime(url) {
-    if (!url) {
-      return 0;
-    }
-
-    try {
-      const rawValue = window.localStorage.getItem(TIME_STORAGE_KEY);
-      const timeMap = rawValue ? JSON.parse(rawValue) : {};
-      const savedTime = Number(timeMap[url]);
-      return Number.isFinite(savedTime) && savedTime > 0 ? savedTime : 0;
-    } catch (error) {
-      return 0;
-    }
-  }
-
-  function persistPlaybackTime(url, time) {
-    if (!url || !Number.isFinite(time)) {
-      return;
-    }
-
-    try {
-      const rawValue = window.localStorage.getItem(TIME_STORAGE_KEY);
-      const timeMap = rawValue ? JSON.parse(rawValue) : {};
-      timeMap[url] = Math.max(0, Math.floor(time));
-      window.localStorage.setItem(TIME_STORAGE_KEY, JSON.stringify(timeMap));
-    } catch (error) {
-      return;
-    }
-  }
-
-  function restorePlaybackTime() {
-    const restoreTime = state.pendingRestoreTime;
-    if (!Number.isFinite(restoreTime) || restoreTime <= 0) {
-      return;
-    }
-
-    const safeTime = Math.max(0, Math.min(restoreTime, Math.max(0, videoPlayer.duration - 1)));
-    if (safeTime > 0) {
-      videoPlayer.currentTime = safeTime;
-    }
-    state.pendingRestoreTime = 0;
   }
 
   function showVideoFeedback(type) {
