@@ -15,6 +15,7 @@
   const resultSummary = document.getElementById("resultSummary");
   const searchInput = document.getElementById("searchInput");
   const videoPlayer = document.getElementById("videoPlayer");
+  const playerPanel = document.querySelector(".player-panel");
   const idleOverlay = document.getElementById("idleOverlay");
   const videoFeedback = document.getElementById("videoFeedback");
   const currentCategory = document.getElementById("currentCategory");
@@ -135,6 +136,7 @@
 
         setActiveVideo(video);
         syncActiveCardState();
+        revealActivePlayer();
       });
 
       item.addEventListener("keydown", function (event) {
@@ -154,6 +156,7 @@
 
         setActiveVideo(video);
         syncActiveCardState();
+        revealActivePlayer();
       });
     });
   }
@@ -224,6 +227,21 @@
       card.classList.toggle("is-active", isActive);
       card.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
+  }
+
+  function revealActivePlayer() {
+    if (!playerPanel || !isMobileViewport()) {
+      return;
+    }
+
+    playerPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  function isMobileViewport() {
+    return window.matchMedia("(max-width: 720px)").matches;
   }
 
   function getInitialVideo() {
