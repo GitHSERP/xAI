@@ -332,6 +332,15 @@
     return match ? match[1] : "";
   }
 
+  function getThumbnailUrl(url) {
+    const normalizedUrl = String(url || "").trim();
+    if (!normalizedUrl) {
+      return "";
+    }
+
+    return normalizedUrl + (normalizedUrl.includes("#") ? "" : "#t=0.1");
+  }
+
   function slugify(value) {
     return String(value || "")
       .trim()
@@ -412,7 +421,7 @@
     return (
       '<article class="video-card' + isActive + '" data-video-url="' + escapeAttribute(video.url) + '" tabindex="0" role="button" aria-label="播放 ' + escapeAttribute(video.title) + '">' +
         '<div class="video-card__preview">' +
-          '<video class="video-card__thumb" src="' + escapeAttribute(video.url) + '" muted preload="metadata" playsinline></video>' +
+          '<video class="video-card__thumb" src="' + escapeAttribute(getThumbnailUrl(video.url)) + '" muted preload="metadata" playsinline aria-hidden="true"></video>' +
           '<span class="video-card__play-icon">▶</span>' +
         "</div>" +
         '<div class="video-card__body">' +
